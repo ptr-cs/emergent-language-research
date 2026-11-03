@@ -1,5 +1,7 @@
 # Emergent Language Lab
 
+![Emergent Language Lab dashboard showing experiment settings, conversation metrics, and the agent workspace](docs/images/emergent-language-lab.png)
+
 A local experiment app for two independent conversational agents powered by your downloaded Ollama model. Run both agents on one computer, or connect two computers so each generates its own agent's messages. The browser dashboard, inference, and experiment records run on your machines. Nothing is published or deployed.
 
 The default model is `gpt-oss:20b`. Python 3.10 or newer is required; the application uses the Python standard library and has no package installation step.
