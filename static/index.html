@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f2e9">
+  <title>Emergent Language Lab</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23294c3e'/%3E%3Ctext x='17' y='45' fill='%23f4f2e9' font-family='Georgia' font-size='46'%3Ee%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="identity"><span class="lab-mark" aria-hidden="true">e<span>l</span></span><div><p class="eyebrow">LOCAL MODELS · SHARED MEANING</p><h1>Emergent Language Lab</h1></div></div>
+    <div class="privacy-note"><span class="status-dot"></span>Local experiment workspace</div>
+  </header>
+
+  <main class="workspace">
+    <aside class="sidebar" aria-label="Experiment configuration">
+      <form id="experiment-form">
+        <div class="section-heading"><span class="section-number">01</span><h2>Set the conditions</h2></div>
+        <fieldset class="field-group"><legend>Connection</legend><div class="segmented"><label><input type="radio" name="mode" value="self" checked><span>Self-conversation</span></label><label><input type="radio" name="mode" value="network"><span>Two computers</span></label></div></fieldset>
+        <p class="field-hint" id="mode-description">Two independent perspectives, one local Ollama model.</p>
+        <div id="network-fields" class="network-fields" hidden>
+          <label class="field">Peer address<input id="peer_url" name="peer_url" type="url" placeholder="http://192.168.1.42:8766" maxlength="2048" autocomplete="off"><span class="field-hint">The second computer’s peer listener.</span></label>
+          <label class="field">Peer token<input id="peer_token" name="peer_token" type="password" placeholder="From the other computer" maxlength="256" autocomplete="off"></label>
+          <button type="button" id="check-peer" class="button secondary small">Test peer connection <span aria-hidden="true">↗</span></button>
+          <p id="peer-check-result" class="inline-result" role="status"></p>
+        </div>
+        <div class="field-label-row"><label for="model">Local model</label><button type="button" id="check-ollama" class="text-button">Check Ollama</button></div>
+        <select id="model" name="model"><option value="gpt-oss:20b">gpt-oss:20b</option></select>
+        <p id="ollama-status" class="connection-status" role="status"><span class="status-dot pending"></span>Checking local Ollama…</p>
+        <label class="field">Experiment<select id="experiment" name="experiment"><option value="dialogue">Open-ended conversation</option><option value="coordination">Cooperative reference game</option></select></label>
+        <div class="experiment-explainer" id="experiment-explainer"><span class="mini-label">ROOM TO EXPLORE</span><p>Agents take turns exploring a shared objective, negotiating useful conventions as the conversation develops.</p></div>
+        <label class="field" id="topic-preset-field">Topic preset<select id="topic-preset"><option value="cooperation">Efficient cooperation</option><option value="custom">Custom</option></select><span class="field-hint">Choose a starting point, then edit the topic below.</span></label>
+        <label class="field"><span id="topic-label">Conversation topic</span><textarea id="topic" name="topic" rows="3" maxlength="2000" placeholder="Develop a reliable, concise way to cooperate using whatever text-based method is most efficient.">Develop a reliable, concise way to cooperate using whatever text-based method is most efficient.</textarea></label>
+        <div class="field-pair"><label class="field">Turns<input id="max_turns" name="max_turns" type="number" min="2" max="2000" step="1" value="40" required></label><label class="field">Words / message<input id="message_words" name="message_words" type="number" min="6" max="500" step="1" value="80" required></label></div>
+        <label class="checkbox-field"><input id="compress" name="compress" type="checkbox"><span>Gradually tighten the word budget<span class="field-hint">Encourage compact conventions across rounds.</span></span></label>
+        <details class="advanced"><summary>Model &amp; memory settings<span aria-hidden="true">+</span></summary><div class="advanced-body">
+          <div class="field-pair"><label class="field">Temperature<input id="temperature" name="temperature" type="number" min="0" max="2" step="0.05" value="0.85" required></label><label class="field">Top p<input id="top_p" name="top_p" type="number" min="0.05" max="1" step="0.01" value="0.95" required></label></div>
+          <div class="field-pair"><label class="field">Random seed<input id="seed" name="seed" type="number" min="0" max="2147483647" step="1" value="42" required></label><label class="field">Recent turns<input id="history_window" name="history_window" type="number" min="0" max="100" step="1" value="12" required></label></div>
+          <p class="field-hint">Set recent turns to 0 for a baseline without conversation memory.</p>
+          <div class="field-pair"><label class="field">Context tokens<input id="num_ctx" name="num_ctx" type="number" min="4096" max="131072" step="1024" value="32768" required></label><label class="field">Output tokens<input id="num_predict" name="num_predict" type="number" min="256" max="8192" step="128" value="8192" required></label></div>
+          <label class="field">Reasoning effort<select id="think" name="think"><option value="low">Low</option><option value="medium">Medium</option><option value="high" selected>High</option></select><span class="field-hint">High is the maximum reasoning level. The 8,192 output tokens cover both reasoning and the final answer. Reasoning stays private; only final answers enter the conversation.</span></label>
+          <label class="field">Opening message <span class="optional">optional</span><textarea id="initial_message" name="initial_message" rows="3" maxlength="4000" placeholder="An opening instruction for the conversation…"></textarea></label>
+        </div></details>
+        <div class="launch-area"><button type="submit" id="start-run" class="button primary">Start conversation <span aria-hidden="true">↗</span></button><p>English channel · separate agent contexts</p></div>
+      </form>
+      <details class="peer-setup" id="peer-setup"><summary><span>Use this computer as a peer</span><span aria-hidden="true">+</span></summary><div class="peer-setup-body"><p id="peer-listener-status">Peer listener is disabled.</p><div id="peer-disabled-help"><p>On the second computer, run:</p><code>python3 app.py --peer-listen 0.0.0.0</code><p>Keep Ollama running there. Connect using its LAN address and the token shown below.</p></div><div id="peer-enabled-info" hidden><p class="mini-label">CONNECTION ADDRESS</p><ul id="peer-addresses"></ul><label class="field">Connection token<div class="token-row"><input id="local-peer-token" type="password" readonly aria-label="This computer’s peer token"><button type="button" id="reveal-token" class="text-button" aria-pressed="false">Show</button><button type="button" id="copy-token" class="text-button">Copy</button></div></label><p class="field-hint">Share the token only with your other computer. Use a trusted LAN or encrypted tunnel.</p></div></div></details>
+    </aside>
+
+    <section class="stage" aria-label="Conversation workspace">
+      <div class="stage-toolbar"><div class="section-heading"><span class="section-number">02</span><h2>Observe the exchange</h2></div><span id="session-status" class="status-pill">Ready</span></div>
+      <div class="run-toolbar"><div class="run-selector"><label for="run-history" class="sr-only">Conversation history</label><select id="run-history"><option value="">Current conversation</option></select><button type="button" id="return-live" class="text-button" hidden>Return to live</button></div><div class="run-actions"><button type="button" id="pause-run" class="button secondary small" disabled>Pause</button><button type="button" id="stop-run" class="button secondary small stop-button" disabled>Stop</button><details class="export-menu"><summary class="button secondary small" aria-label="Export conversation">Export <span aria-hidden="true">↓</span></summary><div class="export-options"><a id="export-json" aria-disabled="true">JSON · complete record</a><a id="export-markdown" aria-disabled="true">Markdown · readable transcript</a></div></details></div></div>
+      <div id="run-meta" class="run-meta">A place to watch conventions take shape.</div>
+      <div class="metrics" aria-label="Conversation metrics"><div class="metric"><span class="mini-label">TURNS</span><strong id="metric-turns">0<span class="metric-unit"> / 40</span></strong></div><div class="metric"><span class="mini-label">TASK ACCURACY</span><strong id="metric-accuracy">—</strong></div><div class="metric"><span class="mini-label">AVG. WORDS</span><strong id="metric-words">—</strong></div><div class="metric"><span class="mini-label">LEXICAL DIVERSITY</span><strong id="metric-diversity">—</strong></div></div>
+      <div id="notice" class="notice" role="alert" hidden></div>
+      <div class="transcript-shell"><div id="transcript" class="transcript" role="log" aria-label="Agent conversation" aria-live="off"><div class="empty-state"><div class="empty-diagram" aria-hidden="true"><span class="diagram-agent agent-a">A</span><span class="diagram-channel"><i></i><i></i><i></i><span>ENGLISH</span></span><span class="diagram-agent agent-b">B</span></div><p class="eyebrow">INDEPENDENT CONTEXTS, SHARED EXPERIENCE</p><h3>What will they learn<br>to say to each other?</h3><p>Set up a conversation and watch two agents build<br class="desktop-break"> a shared understanding, one message at a time.</p><div class="empty-footnote"><span class="status-dot"></span>Your model. Your machines. Your experiment.</div></div></div><button id="new-activity" class="new-activity" type="button" hidden>Latest messages ↓</button></div>
+      <div class="stage-footer"><span><span class="legend-dot a"></span>Agent A <span class="legend-dot b"></span>Agent B</span><span id="stream-status" role="status">Waiting for an experiment</span></div>
+      <details class="research-notes"><summary>Reading the experiment<span aria-hidden="true">+</span></summary><div><p><strong>Conventions need a purpose.</strong> The reference game gives each agent different information and a shared success signal. Repeated rounds and a smaller message budget create pressure to communicate efficiently. Open conversation is useful for exploration, with less objective evidence of successful communication.</p><p><strong>English stays the working language.</strong> Agents may negotiate compact English phrases and agreed meanings. Their model weights remain fixed: any adaptation occurs within the conversation context. The word cap is enforced, so an overlong message can be clipped.</p><p><strong>Observe, then investigate.</strong> Accuracy, length, and lexical diversity describe the exchange; none proves a new language has emerged. Export runs to inspect exact prompts, compare seeds and settings, and check whether conventions survive new examples. Private task information is visible in exported research records.</p></div></details>
+      <section id="peer-activity-section" class="peer-activity" hidden aria-label="Incoming peer activity"><div class="section-heading"><span class="section-number">↙</span><h2>Incoming peer activity</h2></div><p class="field-hint">Responses generated here for another computer’s conversation.</p><div id="peer-activity-list"></div></section>
+    </section>
+  </main>
+  <footer class="page-footer"><span>EMERGENT LANGUAGE RESEARCH</span><span>Local inference · no cloud service required</span></footer>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
